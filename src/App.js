@@ -9,6 +9,7 @@ function App() {
 
   const [zoom, setZoom] = useState(100);
 
+  // TODO Make the AST editable from the text-container.
   const [ast, setAst] = useState({
     nodes: [
       {
@@ -17,6 +18,7 @@ function App() {
     ],
   });
 
+  const [hoveredCoords, setHoveredCoords] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
   const [selectedNode, setSelectedNode] = useState("untitled");
 
@@ -89,15 +91,42 @@ function App() {
                     setSelectedNode(node.name);
                   }
                 }}
-                onMouseEnter={() => {
-                  setHoveredNode(node.name);
-                }}
                 onMouseLeave={() => {
                   setHoveredNode(null);
+                }}
+                onMouseMove={(event) => {
+                  setHoveredCoords({
+                    x: event.clientX - (window.innerWidth * 0.75),
+                    y: event.clientY - (window.innerHeight * 0.5),
+                  });
+                  setHoveredNode(node.name);
                 }}
               />
             );
           })}
+          {hoveredCoords && hoveredNode && (
+            <>
+              <rect
+                className="svg-tooltip"
+                x={hoveredCoords.x}
+                y={hoveredCoords.y}
+                width={300}
+                height={42}
+              />
+              <foreignObject
+                x={hoveredCoords.x}
+                y={hoveredCoords.y}
+                width={300}
+                height={42}
+              >
+                <div
+                  className="tooltip"
+                >
+                  {hoveredNode}
+                </div>
+              </foreignObject>  
+            </>
+          )}
         </svg>
       </div>
     </>
