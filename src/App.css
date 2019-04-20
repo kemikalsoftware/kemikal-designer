@@ -1,6 +1,11 @@
 * {
   box-sizing: border-box;
   cursor: default;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   user-select: none;
 }
 
@@ -27,31 +32,33 @@ body {
   text-transform: uppercase;
 }
 
-#left-container {
+#text-container {
   position: fixed;
   top: 54px;
   left: 0;
   right: 50%;
   bottom: 0;
-}
 
-#text-content {
   background: #111111;
   border: 0;
   color: #EEEEEE;
-  cursor: text;
   font-family: monospace;
   font-size: 18px;
-  height: 100%;
   outline: none;
   overflow: auto;
   padding: 18px;
   resize: none;
-  white-space: pre;
-  width: 100%;
 }
 
-#right-container {
+#text-container * {
+  font-family: monospace;
+}
+
+.text-reserved-word {
+  font-weight: bold;
+}
+
+#svg-container {
   position: fixed;
   top: 54px;
   left: 50%;
@@ -59,10 +66,20 @@ body {
   bottom: 0;
 }
 
-#svg-container {
+#svg-content {
   background: #000000;
 }
 
-circle {
+.svg-node {
+  cursor: pointer;
   fill: #FFFFFF;
+}
+
+.hovered {
+  fill: #3399EE;
+}
+
+.selected {
+  stroke: #FFFFFF;
+  stroke-width: 3px;
 }

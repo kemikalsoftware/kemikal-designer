@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
 function App() {
   const [svgDimensions, setSvgDimensions] = useState({
@@ -9,9 +9,20 @@ function App() {
 
   const [zoom, setZoom] = useState(100);
 
+  const [ast, setAst] = useState({
+    nodes: [
+      {
+        name: "untitled",
+      },
+    ],
+  });
+
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const [selectedNode, setSelectedNode] = useState("untitled");
+
   useEffect(() => {
     function handleWindowResize() {
-      const svgContainer = document.getElementById("right-container");
+      const svgContainer = document.getElementById("svg-container");
 
       setSvgDimensions({
         width: svgContainer.clientWidth,
@@ -21,10 +32,10 @@ function App() {
 
     handleWindowResize();
     
-    window.addEventListener('resize', handleWindowResize, true);
+    window.addEventListener("resize", handleWindowResize, true);
 
     return () => {
-      window.removeEventListener('resize', handleWindowResize, true);
+      window.removeEventListener("resize", handleWindowResize, true);
     };
   });
 
@@ -36,14 +47,20 @@ function App() {
       <div id="top-container">
         Kemikal Designer
       </div>
-      <div id="left-container">
-        <textarea id="text-content">
-
-        </textarea>
+      <div
+        id="text-container"
+      >
+        {ast.nodes.map(node => {
+          return (
+            <div key={node.name}>
+              class {node.name}
+            </div>
+          );
+        })}
       </div>
-      <div id="right-container">
+      <div id="svg-container">
         <svg
-          id="svg-container"
+          id="svg-content"
           width={svgDimensions.width}
           height={svgDimensions.height}
           viewBox={`-${svgDimensions.width / 2} -${svgDimensions.height / 2} ${svgDimensions.width} ${svgDimensions.height}`}
@@ -56,12 +73,31 @@ function App() {
             }
           }}
         >
-          <circle
-            cx={0}
-            cy={0}
-            r={zoom}
-            fillOpacity={1 - (zoom / (maxZoom - minZoom))}
-          />
+          {ast.nodes.map(node => {
+            return (
+              <circle
+                key={node.name}
+                className={`svg-node${hoveredNode === node.name ? " hovered" : ""}${selectedNode === node.name ? " selected" : ""}`}
+                cx={0}
+                cy={0}
+                r={zoom}
+                fillOpacity={1 - (zoom / (maxZoom - minZoom))}
+                onClick={() => {
+                  if (selectedNode === node.name) {
+                    setSelectedNode(null);
+                  } else {
+                    setSelectedNode(node.name);
+                  }
+                }}
+                onMouseEnter={() => {
+                  setHoveredNode(node.name);
+                }}
+                onMouseLeave={() => {
+                  setHoveredNode(null);
+                }}
+              />
+            );
+          })}
         </svg>
       </div>
     </>
