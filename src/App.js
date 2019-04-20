@@ -76,6 +76,7 @@ function App() {
           }}
         >
           {ast.nodes.map(node => {
+            // TODO Darken color of circle on mousedown.
             return (
               <circle
                 key={node.name}
