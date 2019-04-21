@@ -35,8 +35,8 @@ body {
 #text-container {
   position: fixed;
   top: 54px;
-  left: 0;
-  right: 50%;
+  left: 50%;
+  right: 0;
   bottom: 0;
 
   background: #111111;
@@ -61,8 +61,8 @@ body {
 #svg-container {
   position: fixed;
   top: 54px;
-  left: 50%;
-  right: 0;
+  left: 0;
+  right: 50%;
   bottom: 0;
 }
 
@@ -76,11 +76,31 @@ body {
 }
 
 .hovered {
-  fill: #3399EE;
+  fill: #33CCEE;
+}
+
+.pressed {
+  stroke: #FFFFFF;
+  stroke-width: 1px;
 }
 
 .selected {
-  fill: #3399EE;
+  fill: #33EE99;
+}
+
+.svg-status {
+  fill: transparent;
+  position: fixed;
+}
+
+.status {
+  color: #FFFFFF;
+  font-size: 15px;
+  padding: 9px;
+}
+
+.status-value {
+  font-weight: bold;
 }
 
 .svg-tooltip {
