@@ -43,7 +43,19 @@ function App() {
     return () => {
       window.removeEventListener("resize", handleWindowResize);
     };
-  });
+  }, []);
+
+  useEffect(() => {
+    function handleMouseUp() {
+      setPressedNode(null);
+    }
+    
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
 
   const maxZoom = Math.sqrt(Math.pow(svgDimensions.width, 2) + Math.pow(svgDimensions.height, 2)) / 2;
   const minZoom = 18;
@@ -91,8 +103,8 @@ function App() {
                 onMouseDown={() => {
                   setPressedNode(node.name);
                 }}
-                onMouseUp={() => {
-                  setPressedNode(null);
+                onMouseLeave={() => {
+                  setHoveredNode(null);
                 }}
                 onMouseMove={(event) => {
                   setHoveredCoords({
@@ -100,9 +112,6 @@ function App() {
                     y: event.clientY - (window.innerHeight * 0.5),
                   });
                   setHoveredNode(node.name);
-                }}
-                onMouseLeave={() => {
-                  setHoveredNode(null);
                 }}
               />
             );
@@ -118,10 +127,10 @@ function App() {
             x={(window.innerWidth * 0.25) - 50}
             y={38 - (window.innerHeight * 0.5)}
             iconData={({ x, y, width, height }) => `
-              M ${x + (width / 2) - 1} ${y + 8} 
-              L ${x + (width / 2) - 1} ${y + height - 10}
-              M ${x + 8} ${y + (height / 2) - 1} 
-              L ${x + width - 10} ${y + (height / 2) - 1}
+              M ${x + (width / 2)} ${y + 10} 
+              L ${x + (width / 2)} ${y + height - 10}
+              M ${x + 10} ${y + (height / 2)} 
+              L ${x + width - 10} ${y + (height / 2)}
             `}
           />
         </svg>

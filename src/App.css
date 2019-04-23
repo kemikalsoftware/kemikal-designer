@@ -119,10 +119,13 @@ body {
 
 .svg-button {
   cursor: pointer;
+}
+
+.svg-button-fill {
   fill: #222222;
 }
 
-.svg-button.pressed {
+.svg-button-fill.pressed {
   fill: #191919;
 }
 

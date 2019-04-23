@@ -21,10 +21,11 @@ const Button = ({
     return () => {
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  });
+  }, []);
 
   return (
     <g
+      className="svg-button"
       onMouseDown={() => {
         setPressed(true);
       }}
@@ -33,7 +34,7 @@ const Button = ({
       }}
     >
       <rect
-        className={`svg-button${pressed ? " pressed" : ""}`}
+        className={`svg-button-fill${pressed ? " pressed" : ""}`}
         x={x}
         y={y}
         rx={3}
@@ -58,7 +59,7 @@ const Button = ({
       <path
         className="svg-button-icon"
         d={iconData({ x, y, width, height })}
-        transform={pressed ? `translate(2 2)` : undefined}
+        transform={pressed ? `translate(1 1)` : undefined}
       />
     </g>
   );
