@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import Status from "./Status";
+import Tooltip from "./Tooltip";
+import Button from "./Button";
 import "./App.css";
 
 function App() {
@@ -35,10 +38,10 @@ function App() {
 
     handleWindowResize();
     
-    window.addEventListener("resize", handleWindowResize, true);
+    window.addEventListener("resize", handleWindowResize);
 
     return () => {
-      window.removeEventListener("resize", handleWindowResize, true);
+      window.removeEventListener("resize", handleWindowResize);
     };
   });
 
@@ -104,64 +107,32 @@ function App() {
               />
             );
           })}
-          {selectedNode && (
-            <>
-              <rect
-                className="svg-status"
-                x={9 - (window.innerWidth * 0.25)}
-                y={36 - (window.innerHeight * 0.5)}
-                width={300}
-                height={40}
-              />
-              <foreignObject
-                x={9 - (window.innerWidth * 0.25)}
-                y={36 - (window.innerHeight * 0.5)}
-                width={300}
-                height={40}
-              >
-                <div
-                  className="status"
-                >
-                  Selection: <span className="status-value">{selectedNode}</span>
-                </div>
-              </foreignObject>  
-            </>
-          )}
-          {hoveredCoords && hoveredNode && (
-            <>
-              <rect
-                className="svg-tooltip"
-                x={hoveredCoords.x}
-                y={hoveredCoords.y}
-                width={300}
-                height={40}
-              />
-              <foreignObject
-                x={hoveredCoords.x}
-                y={hoveredCoords.y}
-                width={300}
-                height={40}
-              >
-                <div
-                  className="tooltip"
-                >
-                  {hoveredNode}
-                </div>
-              </foreignObject>  
-            </>
-          )}
+          <Status
+            selectedNode={selectedNode}
+          />
+          <Tooltip
+            hoveredCoords={hoveredCoords}
+            hoveredNode={hoveredNode}
+          />
+          <Button
+            x={(window.innerWidth * 0.25) - 50}
+            y={38 - (window.innerHeight * 0.5)}
+            iconData={({ x, y, width, height }) => `
+              M ${x + (width / 2) - 1} ${y + 8} 
+              L ${x + (width / 2) - 1} ${y + height - 10}
+              M ${x + 8} ${y + (height / 2) - 1} 
+              L ${x + width - 10} ${y + (height / 2) - 1}
+            `}
+          />
         </svg>
       </div>
-      <div
-        id="text-container"
-      >
-        {ast.nodes.map(node => {
-          return (
-            <div key={node.name}>
-              class {node.name}
-            </div>
-          );
-        })}
+      <div id="text-container">
+        <textarea
+          id="text-content"
+          defaultValue={ast.nodes
+            .map(node => `class ${node.name}\n`)
+            .join('\n')}
+        />
       </div>
     </>
   );

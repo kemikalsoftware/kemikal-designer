@@ -1,6 +1,5 @@
 * {
   box-sizing: border-box;
-  cursor: default;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -10,6 +9,7 @@
 }
 
 body {
+  cursor: default;
   overflow: hidden;
 }
 
@@ -26,7 +26,7 @@ body {
   align-items: center;
 
   background: #222222;
-  color: #EEEEEE;
+  color: #999999;
   font-size: 18px;
   padding-left: 18px;
   text-transform: uppercase;
@@ -38,6 +38,11 @@ body {
   left: 50%;
   right: 0;
   bottom: 0;
+}
+
+#text-content {
+  width: 100%;
+  height: 100%;
 
   background: #111111;
   border: 0;
@@ -48,10 +53,6 @@ body {
   overflow: auto;
   padding: 18px;
   resize: none;
-}
-
-#text-container * {
-  font-family: monospace;
 }
 
 .text-reserved-word {
@@ -75,16 +76,16 @@ body {
   fill: #FFFFFF;
 }
 
-.hovered {
+.svg-node.hovered {
   fill: #33CCEE;
 }
 
-.pressed {
+.svg-node.pressed {
   stroke: #FFFFFF;
-  stroke-width: 1px;
+  stroke-width: 3px;
 }
 
-.selected {
+.svg-node.selected {
   fill: #33EE99;
 }
 
@@ -94,7 +95,7 @@ body {
 }
 
 .status {
-  color: #FFFFFF;
+  color: #CCCCCC;
   font-size: 15px;
   padding: 9px;
 }
@@ -114,4 +115,23 @@ body {
   font-family: monospace;
   font-size: 18px;
   padding: 9px;
+}
+
+.svg-button {
+  cursor: pointer;
+  fill: #222222;
+}
+
+.svg-button.pressed {
+  fill: #191919;
+}
+
+.svg-button-shadow {
+  stroke: #111111;
+  stroke-width: 3px;
+}
+
+.svg-button-icon {
+  stroke: #999999;
+  stroke-width: 3px;
 }
