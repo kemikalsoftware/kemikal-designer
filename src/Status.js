@@ -7,7 +7,7 @@ const Status = ({
     return null;
   }
   const x = 10 - (window.innerWidth * 0.25);
-  const y = 80 - (window.innerHeight * 0.5);
+  const y = 84 - (window.innerHeight * 0.5);
   return (
     <>
       <rect

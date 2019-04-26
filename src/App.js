@@ -23,6 +23,9 @@ function App() {
 
   const [hoveredCoords, setHoveredCoords] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
+  const [mouseCoords, setMouseCoords] = useState(null);
+  const [panCoords, setPanCoords] = useState({ x: 0, y: 0 });
+  const [panning, setPanning] = useState(false);
   const [pressedNode, setPressedNode] = useState(null);
   const [selectedNodes, setSelectedNodes] = useState(["untitled"]);
 
@@ -74,6 +77,27 @@ function App() {
           width={svgDimensions.width}
           height={svgDimensions.height}
           viewBox={`-${svgDimensions.width / 2} -${svgDimensions.height / 2} ${svgDimensions.width} ${svgDimensions.height}`}
+          onMouseDown={() => {
+            setPanning(true);
+          }}
+          onMouseMove={(event) => {
+            if (panning) {
+              if (mouseCoords) {
+                setPanCoords({
+                  x: panCoords.x + (event.clientX - mouseCoords.x),
+                  y: panCoords.y + (event.clientY - mouseCoords.y),
+                });
+              }
+              setMouseCoords({
+                x: event.clientX,
+                y: event.clientY,
+              });
+            }
+          }}
+          onMouseUp={() => {
+            setPanning(false);
+            setMouseCoords(null);
+          }}
           onWheel={(event) => {
             // TODO Throttle these events.
             const nextZoom = zoom + event.deltaY;
@@ -95,8 +119,8 @@ function App() {
               <circle
                 key={node.name}
                 className={`svg-node${hovered ? " hovered" : ""}${pressed ? " pressed" : ""}${selected ? " selected" : ""}`}
-                cx={magnitude * Math.sin(angle)}
-                cy={magnitude * Math.cos(angle)}
+                cx={magnitude * Math.sin(angle) + panCoords.x}
+                cy={magnitude * Math.cos(angle) + panCoords.y}
                 r={zoom * 2/3}
                 fillOpacity={1 - (zoom / (maxZoom - minZoom))}
                 strokeOpacity={1 - (zoom / (maxZoom - minZoom))}
