@@ -96,8 +96,9 @@ body {
 
 .status {
   color: #CCCCCC;
-  font-size: 15px;
-  padding: 9px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 4px;
 }
 
 .status-value {
@@ -123,6 +124,7 @@ body {
 
 .svg-button-fill {
   fill: #222222;
+  opacity: 0.75;
 }
 
 .svg-button-fill.pressed {

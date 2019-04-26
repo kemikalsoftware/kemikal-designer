@@ -4,6 +4,7 @@ const width = 38;
 const height = 38;
 
 const Button = ({
+  disabled,
   iconData,
   onClick,
   x,
@@ -26,9 +27,12 @@ const Button = ({
   return (
     <g
       className="svg-button"
-      onClick={onClick}
+      opacity={disabled ? 0.5 : 1}
+      onClick={disabled ? undefined : onClick}
       onMouseDown={() => {
-        setPressed(true);
+        if (!disabled) {
+          setPressed(true);
+        }
       }}
     >
       <rect

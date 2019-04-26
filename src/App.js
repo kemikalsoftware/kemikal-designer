@@ -10,7 +10,7 @@ function App() {
     height: 0,
   });
 
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(200);
 
   // TODO Make the AST editable from the text-container.
   const [ast, setAst] = useState({
@@ -24,7 +24,7 @@ function App() {
   const [hoveredCoords, setHoveredCoords] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
   const [pressedNode, setPressedNode] = useState(null);
-  const [selectedNode, setSelectedNode] = useState("untitled");
+  const [selectedNodes, setSelectedNodes] = useState(["untitled"]);
 
   useEffect(() => {
     function handleWindowResize() {
@@ -60,6 +60,9 @@ function App() {
   const maxZoom = Math.sqrt(Math.pow(svgDimensions.width, 2) + Math.pow(svgDimensions.height, 2)) / 2;
   const minZoom = 18;
 
+  const theta = Math.PI / ast.nodes.length;
+  const magnitude = theta === Math.PI ? 0 : zoom / Math.sin(theta);
+
   return (
     <>
       <div id="top-container">
@@ -80,30 +83,35 @@ function App() {
             }
           }}
         >
+          <Status
+            selectedNodes={selectedNodes}
+          />
           {ast.nodes.map((node, index) => {
-            const theta = Math.PI / ast.nodes.length;
-            const magnitude = theta === Math.PI ? 0 : zoom / Math.sin(theta);
-            const phi = 2 * Math.PI * index / ast.nodes.length;
-            const x = magnitude * Math.sin(phi);
-            const y = magnitude * Math.cos(phi);
-
             const hovered = hoveredNode === node.name;
             const pressed = pressedNode === node.name;
-            const selected = selectedNode === node.name;
+            const selected = selectedNodes.includes(node.name);
+            const angle = 2 * Math.PI * index / ast.nodes.length;
             return (
               <circle
                 key={node.name}
                 className={`svg-node${hovered ? " hovered" : ""}${pressed ? " pressed" : ""}${selected ? " selected" : ""}`}
-                cx={x}
-                cy={y}
-                r={zoom}
+                cx={magnitude * Math.sin(angle)}
+                cy={magnitude * Math.cos(angle)}
+                r={zoom * 2/3}
                 fillOpacity={1 - (zoom / (maxZoom - minZoom))}
                 strokeOpacity={1 - (zoom / (maxZoom - minZoom))}
-                onClick={() => {
-                  if (selectedNode === node.name) {
-                    setSelectedNode(null);
+                onClick={(event) => {
+                  if (selectedNodes.includes(node.name) && selectedNodes.length === 1) {
+                    setSelectedNodes([]);
+                  } else if (event.metaKey || event.ctrlKey) {
+                    if (selectedNodes.includes(node.name)) {
+                      const nodeIndex = selectedNodes.findIndex(x => x === node.name);
+                      setSelectedNodes([...selectedNodes.slice(0, nodeIndex), ...selectedNodes.slice(nodeIndex + 1, selectedNodes.length)]);
+                    } else {
+                      setSelectedNodes([...selectedNodes, node.name]);
+                    }
                   } else {
-                    setSelectedNode(node.name);
+                    setSelectedNodes([node.name]);
                   }
                 }}
                 onMouseDown={() => {
@@ -129,13 +137,28 @@ function App() {
               />
             );
           })}
-          <Status
-            selectedNode={selectedNode}
-          />
           <Tooltip
             hoveredCoords={hoveredCoords}
             hoveredNode={hoveredNode}
           />
+          {selectedNodes.length > 0 && (
+            <Button
+              x={-(window.innerWidth * 0.25) + 12}
+              y={38 - (window.innerHeight * 0.5)}
+              iconData={({ x, y, width, height }) => `
+                M ${x + 10} ${y + 10} 
+                L ${x + width - 10} ${y + height - 10}
+                M ${x + width - 10} ${y + 10} 
+                L ${x + 10} ${y + height - 10}
+              `}
+              onClick={() => {
+                setAst({
+                  nodes: ast.nodes.filter(node => !selectedNodes.includes(node.name)),
+                });
+                setSelectedNodes([]);
+              }}
+            />
+          )}
           <Button
             x={(window.innerWidth * 0.25) - 50}
             y={38 - (window.innerHeight * 0.5)}

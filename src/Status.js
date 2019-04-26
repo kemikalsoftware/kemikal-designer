@@ -1,36 +1,38 @@
 import React from "react";
 
-const width = 300;
-const height = 40;
-
 const Status = ({
-  selectedNode,
+  selectedNodes,
 }) => {
-  if (!selectedNode) {
+  if (selectedNodes.length === 0) {
     return null;
   }
-  const x = 9 - (window.innerWidth * 0.25);
-  const y = 36 - (window.innerHeight * 0.5);
+  const x = 10 - (window.innerWidth * 0.25);
+  const y = 80 - (window.innerHeight * 0.5);
   return (
     <>
       <rect
         className="svg-status"
         x={x}
         y={y}
-        width={width}
-        height={height}
+        width={window.innerWidth}
+        height={window.innerHeight}
       />
       <foreignObject
         x={x}
         y={y}
-        width={width}
-        height={height}
+        width={window.innerWidth}
+        height={window.innerHeight}
       >
-        <div
-          className="status"
-        >
-          Selection: <span className="status-value">{selectedNode}</span>
-        </div>
+        {selectedNodes.map(selectedNode => (
+          <div
+            key={selectedNode}
+            className="status"
+          >
+            <span className="status-value">
+              {selectedNode}
+            </span>
+          </div>
+        ))}
       </foreignObject>
     </>
   );
