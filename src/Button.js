@@ -26,11 +26,9 @@ const Button = ({
   return (
     <g
       className="svg-button"
+      onClick={onClick}
       onMouseDown={() => {
         setPressed(true);
-      }}
-      onMouseUp={() => {
-        setPressed(false);
       }}
     >
       <rect
