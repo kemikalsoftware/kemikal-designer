@@ -21,6 +21,7 @@ function App() {
     ],
   });
 
+  const [clickInvalid, setClickInvalid] = useState(false);
   const [hoveredCoords, setHoveredCoords] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
   const [mouseCoords, setMouseCoords] = useState(null);
@@ -74,6 +75,7 @@ function App() {
       <div id="svg-container">
         <svg
           id="svg-content"
+          className={panning ? "pressed" : undefined}
           width={svgDimensions.width}
           height={svgDimensions.height}
           viewBox={`-${svgDimensions.width / 2} -${svgDimensions.height / 2} ${svgDimensions.width} ${svgDimensions.height}`}
@@ -120,11 +122,15 @@ function App() {
                 key={node.name}
                 className={`svg-node${hovered ? " hovered" : ""}${pressed ? " pressed" : ""}${selected ? " selected" : ""}`}
                 cx={magnitude * Math.sin(angle) + panCoords.x}
-                cy={magnitude * Math.cos(angle) + panCoords.y}
+                cy={magnitude * -Math.cos(angle) + panCoords.y}
                 r={zoom * 2/3}
                 fillOpacity={1 - (zoom / (maxZoom - minZoom))}
                 strokeOpacity={1 - (zoom / (maxZoom - minZoom))}
                 onClick={(event) => {
+                  if (clickInvalid) {
+                    setClickInvalid(false);
+                    return;
+                  }
                   if (selectedNodes.includes(node.name) && selectedNodes.length === 1) {
                     setSelectedNodes([]);
                   } else if (event.metaKey || event.ctrlKey) {
@@ -152,6 +158,9 @@ function App() {
                   setHoveredNode(null);
                 }}
                 onMouseMove={(event) => {
+                  if (pressedNode === node.name) {
+                    setClickInvalid(true);
+                  }
                   setHoveredCoords({
                     x: event.clientX - (window.innerWidth * 0.25),
                     y: event.clientY - (window.innerHeight * 0.5),
@@ -161,19 +170,21 @@ function App() {
               />
             );
           })}
-          <Tooltip
-            hoveredCoords={hoveredCoords}
-            hoveredNode={hoveredNode}
-          />
+          {!panning && (
+            <Tooltip
+              hoveredCoords={hoveredCoords}
+              hoveredNode={hoveredNode}
+            />
+          )}
           {selectedNodes.length > 0 && (
             <Button
               x={-(window.innerWidth * 0.25) + 12}
               y={38 - (window.innerHeight * 0.5)}
               iconData={({ x, y, width, height }) => `
-                M ${x + 10} ${y + 10} 
-                L ${x + width - 10} ${y + height - 10}
-                M ${x + width - 10} ${y + 10} 
-                L ${x + 10} ${y + height - 10}
+                M ${x + 12} ${y + 12} 
+                L ${x + width - 12} ${y + height - 12}
+                M ${x + width - 12} ${y + 12} 
+                L ${x + 12} ${y + height - 12}
               `}
               onClick={() => {
                 setAst({
