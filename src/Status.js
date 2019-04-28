@@ -3,9 +3,6 @@ import React from "react";
 const Status = ({
   selectedNodes,
 }) => {
-  if (selectedNodes.length === 0) {
-    return null;
-  }
   const x = 10 - (window.innerWidth * 0.25);
   const y = 84 - (window.innerHeight * 0.5);
   return (

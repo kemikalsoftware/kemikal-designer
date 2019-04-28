@@ -7,9 +7,6 @@ const Tooltip = ({
   hoveredCoords,
   hoveredNode,
 }) => {
-  if (!(hoveredCoords && hoveredNode)) {
-    return null;
-  }
   const x = hoveredCoords.x;
   const y = hoveredCoords.y;
   return (

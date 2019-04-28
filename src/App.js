@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import Button from "./Button";
+import Edge from "./Edge";
 import Status from "./Status";
 import Tooltip from "./Tooltip";
-import Button from "./Button";
 import "./App.css";
 
 function App() {
@@ -21,12 +22,14 @@ function App() {
     ],
   });
 
-  const [clickInvalid, setClickInvalid] = useState(false);
+  const [connectedNode, setConnectedNode] = useState(null);
   const [hoveredCoords, setHoveredCoords] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
+  const [invalidClick, setInvalidClick] = useState(false);
   const [mouseCoords, setMouseCoords] = useState(null);
+  const [moveMode, setMoveMode] = useState(null);
   const [panCoords, setPanCoords] = useState({ x: 0, y: 0 });
-  const [panning, setPanning] = useState(false);
+  const [pressedCanvas, setPressedCanvas] = useState(false);
   const [pressedNode, setPressedNode] = useState(null);
   const [selectedNodes, setSelectedNodes] = useState(["untitled"]);
 
@@ -51,6 +54,10 @@ function App() {
 
   useEffect(() => {
     function handleMouseUp() {
+      setConnectedNode(null);
+      setMouseCoords(null);
+      setMoveMode(null);
+      setPressedCanvas(false);
       setPressedNode(null);
     }
     
@@ -67,6 +74,18 @@ function App() {
   const theta = Math.PI / ast.nodes.length;
   const magnitude = theta === Math.PI ? 0 : zoom / Math.sin(theta);
 
+  const nodeRadius = zoom * 2/3;
+  const nodeGeometry = {};
+
+  for (let index = 0; index < ast.nodes.length; index += 1) {
+    const angle = 2 * Math.PI * index / ast.nodes.length;
+    nodeGeometry[ast.nodes[index].name] = {
+      angle,
+      x: magnitude * Math.sin(angle) + panCoords.x,
+      y: magnitude * -Math.cos(angle) + panCoords.y,
+    };
+  }
+
   return (
     <>
       <div id="top-container">
@@ -75,15 +94,18 @@ function App() {
       <div id="svg-container">
         <svg
           id="svg-content"
-          className={panning ? "pressed" : undefined}
+          className={`
+            ${moveMode === "connecting" ? " connecting" : undefined}
+            ${moveMode === "panning" || (!moveMode && pressedCanvas) ? " panning" : undefined}
+          `}
           width={svgDimensions.width}
           height={svgDimensions.height}
           viewBox={`-${svgDimensions.width / 2} -${svgDimensions.height / 2} ${svgDimensions.width} ${svgDimensions.height}`}
           onMouseDown={() => {
-            setPanning(true);
+            setPressedCanvas(true);
           }}
           onMouseMove={(event) => {
-            if (panning) {
+            if (moveMode === "panning") {
               if (mouseCoords) {
                 setPanCoords({
                   x: panCoords.x + (event.clientX - mouseCoords.x),
@@ -94,11 +116,18 @@ function App() {
                 x: event.clientX,
                 y: event.clientY,
               });
+            } else if (pressedCanvas) {
+              if (!invalidClick) {
+                setInvalidClick(true);
+              }
+              const modified = event.metaKey || event.ctrlKey;
+              if (modified && moveMode !== "connecting") {
+                setMoveMode("connecting");
+                setSelectedNodes([pressedNode]);
+              } else if (!modified && moveMode !== "panning") {
+                setMoveMode("panning");
+              }
             }
-          }}
-          onMouseUp={() => {
-            setPanning(false);
-            setMouseCoords(null);
           }}
           onWheel={(event) => {
             // TODO Throttle these events.
@@ -109,38 +138,66 @@ function App() {
             }
           }}
         >
-          <Status
-            selectedNodes={selectedNodes}
-          />
+          {selectedNodes.length > 0 && (
+            <>
+              <Button
+                x={-(window.innerWidth * 0.25) + 12}
+                y={38 - (window.innerHeight * 0.5)}
+                iconData={({ x, y, width, height }) => `
+                  M ${x + 12} ${y + 12} 
+                  L ${x + width - 12} ${y + height - 12}
+                  M ${x + width - 12} ${y + 12} 
+                  L ${x + 12} ${y + height - 12}
+                `}
+                onClick={() => {
+                  setAst({
+                    nodes: ast.nodes.filter(node => !selectedNodes.includes(node.name)),
+                  });
+                  setSelectedNodes([]);
+                }}
+              />
+              <Status
+                selectedNodes={selectedNodes}
+              />
+            </>
+          )}
           {ast.nodes.map((node, index) => {
             const hovered = hoveredNode === node.name;
             const pressed = pressedNode === node.name;
             const selected = selectedNodes.includes(node.name);
-            const angle = 2 * Math.PI * index / ast.nodes.length;
             return (
               <circle
                 key={node.name}
-                className={`svg-node${hovered ? " hovered" : ""}${pressed ? " pressed" : ""}${selected ? " selected" : ""}`}
-                cx={magnitude * Math.sin(angle) + panCoords.x}
-                cy={magnitude * -Math.cos(angle) + panCoords.y}
-                r={zoom * 2/3}
+                className={`
+                  svg-node
+                  ${hovered ? " hovered" : ""}
+                  ${pressed && !moveMode ? " pressed" : ""}
+                  ${selected ? " selected" : ""}
+                  ${moveMode === "connecting" ? " connecting" : ""}
+                  ${moveMode === "panning" ? " panning" : ""}
+                `}
+                cx={nodeGeometry[node.name].x}
+                cy={nodeGeometry[node.name].y}
+                r={nodeRadius}
                 fillOpacity={1 - (zoom / (maxZoom - minZoom))}
                 strokeOpacity={1 - (zoom / (maxZoom - minZoom))}
                 onClick={(event) => {
-                  if (clickInvalid) {
-                    setClickInvalid(false);
-                    return;
-                  }
-                  if (selectedNodes.includes(node.name) && selectedNodes.length === 1) {
-                    setSelectedNodes([]);
-                  } else if (event.metaKey || event.ctrlKey) {
-                    if (selectedNodes.includes(node.name)) {
-                      const nodeIndex = selectedNodes.findIndex(x => x === node.name);
-                      setSelectedNodes([...selectedNodes.slice(0, nodeIndex), ...selectedNodes.slice(nodeIndex + 1, selectedNodes.length)]);
-                    } else {
-                      setSelectedNodes([...selectedNodes, node.name]);
-                    }
+                  const modified = event.metaKey || event.ctrlKey;
+                  if (invalidClick) {
+                    // The mouse was moved, so don't count this as a click.
+                    setInvalidClick(false);
+                  } else if (selectedNodes.includes(node.name) && (modified || selectedNodes.length === 1)) {
+                    // The node is selected, and either a modifier key is pressed or it's the only node, so remove it from the selection.
+                    const nodeIndex = selectedNodes.findIndex(x => x === node.name);
+                    setSelectedNodes([
+                      ...selectedNodes.slice(0, nodeIndex),
+                      ...selectedNodes.slice(nodeIndex + 1, selectedNodes.length),
+                    ]);
+                  } else if (modified) {
+                    // A modifier key is pressed, and the node is not selected, so append it to the selection.
+                    setSelectedNodes([...selectedNodes, node.name]);
                   } else {
+                    // Otherwise, the node becomes the selection.
                     setSelectedNodes([node.name]);
                   }
                 }}
@@ -148,50 +205,43 @@ function App() {
                   setPressedNode(node.name);
                 }}
                 onMouseEnter={(event) => {
+                  if (moveMode === "connecting" && pressedNode !== node.name) {
+                    setConnectedNode(node.name);
+                  }
+                  setHoveredNode(node.name);
                   setHoveredCoords({
                     x: event.clientX - (window.innerWidth * 0.25),
                     y: event.clientY - (window.innerHeight * 0.5),
                   });
-                  setHoveredNode(node.name);
                 }}
                 onMouseLeave={() => {
+                  if (moveMode === "connecting") {
+                    setConnectedNode(null);
+                  }
                   setHoveredNode(null);
                 }}
                 onMouseMove={(event) => {
-                  if (pressedNode === node.name) {
-                    setClickInvalid(true);
-                  }
+                  setHoveredNode(node.name);
                   setHoveredCoords({
                     x: event.clientX - (window.innerWidth * 0.25),
                     y: event.clientY - (window.innerHeight * 0.5),
                   });
-                  setHoveredNode(node.name);
                 }}
               />
             );
           })}
-          {!panning && (
+          {moveMode === "connecting" && connectedNode && pressedNode && (
+            <Edge
+              connectedNode={connectedNode}
+              nodeGeometry={nodeGeometry}
+              nodeRadius={nodeRadius}
+              pressedNode={pressedNode}
+            />
+          )}
+          {moveMode !== "panning" && hoveredCoords && hoveredNode && (
             <Tooltip
               hoveredCoords={hoveredCoords}
               hoveredNode={hoveredNode}
-            />
-          )}
-          {selectedNodes.length > 0 && (
-            <Button
-              x={-(window.innerWidth * 0.25) + 12}
-              y={38 - (window.innerHeight * 0.5)}
-              iconData={({ x, y, width, height }) => `
-                M ${x + 12} ${y + 12} 
-                L ${x + width - 12} ${y + height - 12}
-                M ${x + width - 12} ${y + 12} 
-                L ${x + 12} ${y + height - 12}
-              `}
-              onClick={() => {
-                setAst({
-                  nodes: ast.nodes.filter(node => !selectedNodes.includes(node.name)),
-                });
-                setSelectedNodes([]);
-              }}
             />
           )}
           <Button

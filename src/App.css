@@ -72,7 +72,11 @@ body {
   cursor: grab;
 }
 
-#svg-content.pressed {
+#svg-content.connecting {
+  cursor: crosshair;
+}
+
+#svg-content.panning {
   cursor: grabbing;
 }
 
@@ -81,18 +85,34 @@ body {
   fill: #FFFFFF;
 }
 
+.svg-node.connecting {
+  cursor: crosshair;
+}
+
 .svg-node.hovered {
   fill: #33CCEE;
 }
 
-.svg-node.pressed {
+.svg-node.panning {
   cursor: grabbing;
+}
+
+.svg-node.pressed {
   stroke: #FFFFFF;
   stroke-width: 3px;
 }
 
 .svg-node.selected {
   fill: #33EE99;
+}
+
+.svg-edge {
+  stroke: #FFFFFF;
+  stroke-width: 9px;
+}
+
+.svg-edge-arrowhead {
+  fill: #FFFFFF;
 }
 
 .svg-status {
