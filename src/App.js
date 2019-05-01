@@ -18,9 +18,12 @@ function App() {
     nodes: [
       {
         name: "untitled",
+        edges: [],
       },
     ],
   });
+
+  console.log(ast);
 
   const [connectedNode, setConnectedNode] = useState(null);
   const [hoveredCoords, setHoveredCoords] = useState(null);
@@ -106,6 +109,9 @@ function App() {
           }}
           onMouseMove={(event) => {
             if (moveMode === "panning") {
+              if (!invalidClick) {
+                setInvalidClick(true);
+              }
               if (mouseCoords) {
                 setPanCoords({
                   x: panCoords.x + (event.clientX - mouseCoords.x),
@@ -117,9 +123,6 @@ function App() {
                 y: event.clientY,
               });
             } else if (pressedCanvas) {
-              if (!invalidClick) {
-                setInvalidClick(true);
-              }
               const modified = event.metaKey || event.ctrlKey;
               if (modified && moveMode !== "connecting") {
                 setMoveMode("connecting");
@@ -227,6 +230,39 @@ function App() {
                     y: event.clientY - (window.innerHeight * 0.5),
                   });
                 }}
+                onMouseUp={() => {
+                  if (moveMode === "connecting") {
+                    const pressedNodeIndex = ast.nodes.findIndex(x => x.name === pressedNode);
+                    const astPressedNode = ast.nodes[pressedNodeIndex];
+                    let name;
+                    if (astPressedNode.edges.some(edge => edge.name === "untitled")) {
+                      const lastIndex = astPressedNode.edges
+                        .filter(edge => /untitled-[0-9]+\b/.test(edge.name))
+                        .map(edge => Number(edge.name.substring(9, edge.name.length)))
+                        .reduce((max, index) => (index > max ? index : max), 0);
+                      name = `untitled-${lastIndex + 1}`;
+                    } else {
+                      name = "untitled";
+                    }
+                    setAst({
+                      nodes: [
+                        ...ast.nodes.slice(0, pressedNodeIndex),
+                        {
+                          ...astPressedNode,
+                          edges: [
+                            ...astPressedNode.edges,
+                            {
+                              relationship: "sibling",
+                              node: pressedNode,
+                              name,
+                            },
+                          ],
+                        },
+                        ...ast.nodes.slice(pressedNodeIndex + 1, ast.nodes.length),
+                      ],
+                    });
+                  }
+                }}
               />
             );
           })}
@@ -269,6 +305,7 @@ function App() {
                   ...ast.nodes,
                   {
                     name,
+                    edges: [],
                   },
                 ],
               })
